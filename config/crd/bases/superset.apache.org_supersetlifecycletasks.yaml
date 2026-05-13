@@ -408,7 +408,7 @@ spec:
               podRetention:
                 properties:
                   policy:
-                    default: Retain
+                    default: RetainOnFailure
                     enum:
                     - Delete
                     - Retain
@@ -4054,6 +4054,9 @@ spec:
               image:
                 type: string
               message:
+                type: string
+              nextAttemptAt:
+                format: date-time
                 type: string
               observedGeneration:
                 format: int64

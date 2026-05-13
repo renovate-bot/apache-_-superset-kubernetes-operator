@@ -106,7 +106,7 @@ spec:
 ```
 
 When a schedule is configured, the operator automatically re-runs the full
-lifecycle pipeline (clone → migrate → init) each time a cron tick boundary is
+lifecycle pipeline (clone → migrate → rotate → init) each time a cron tick boundary is
 crossed. The `trigger` field remains functional for manual overrides on top of
 the schedule — both contribute independently.
 
@@ -336,7 +336,7 @@ Each task has configurable timeout and retry behavior:
 spec:
   lifecycle:
     podRetention:
-      policy: RetainOnFailure    # Delete (default) | Retain | RetainOnFailure
+      policy: Retain                # Delete | Retain | RetainOnFailure (default)
     migrate:
       timeout: 10m               # max time per attempt (default: 5m)
       maxRetries: 5              # attempts before permanent failure (default: 3)
@@ -353,11 +353,15 @@ as a failed attempt.
 
 | Policy | On Success | On Failure |
 |---|---|---|
-| `Delete` (default) | Pod deleted | Pod deleted |
+| `Delete` | Pod deleted | Pod deleted |
 | `Retain` | Pod kept | Pod kept |
-| `RetainOnFailure` | Pod deleted | Pod kept for debugging |
+| `RetainOnFailure` (default) | Pod deleted | Pod kept for debugging |
 
-Use `RetainOnFailure` to inspect logs of failed migrations:
+The default keeps only failed task pods so you can inspect logs without
+cluttering the namespace with completed-success pods. Override to `Retain`
+if you want the full history, or `Delete` to garbage-collect everything.
+
+To inspect logs of a retained failed pod:
 
 ```bash
 kubectl logs <pod-name> -c superset
@@ -537,9 +541,11 @@ spec:
   # celeryBeat intentionally omitted — prevents alert double-triggers
 ```
 
-The lifecycle pipeline runs: **clone → migrate → init → components**. Components
-are not deployed until all tasks complete, and clone always drains existing
-components before running (DROP DATABASE fails with active connections).
+The lifecycle pipeline runs: **clone → migrate → rotate → init → components**. Components
+are not deployed until all enabled tasks complete, and clone always drains existing
+components before running (DROP DATABASE fails with active connections). Only
+the tasks you configure run; `rotate`, for example, is skipped when no
+`lifecycle.rotate` spec is set.
 
 ### Clone Trigger and Scheduling
 
