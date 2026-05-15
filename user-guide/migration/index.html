@@ -1,0 +1,1924 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Kubernetes operator for deploying and managing Apache Superset">
+      
+      
+      
+        <link rel="canonical" href="https://apache.github.io/superset-kubernetes-operator/user-guide/migration/">
+      
+      
+        <link rel="prev" href="../networking-and-monitoring/">
+      
+      
+        <link rel="next" href="../../architecture/overview/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Migration from Helm Chart - Apache Superset Kubernetes Operator</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#migration-from-helm-chart" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Apache Superset Kubernetes Operator" class="md-header__button md-logo" aria-label="Apache Superset Kubernetes Operator" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Apache Superset Kubernetes Operator
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Migration from Helm Chart
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/apache/superset-kubernetes-operator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    apache/superset-kubernetes-operator
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Apache Superset Kubernetes Operator" class="md-nav__button md-logo" aria-label="Apache Superset Kubernetes Operator" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Apache Superset Kubernetes Operator
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/apache/superset-kubernetes-operator" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    apache/superset-kubernetes-operator
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../networking-and-monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Networking & Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration from Helm Chart
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration from Helm Chart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#migration-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#value-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Value Mapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Value Mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-env-vars-and-config-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets, Env Vars, and Config Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-and-valkeyredis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database and Valkey/Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pod-and-deployment-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pod and Deployment Customization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#services-and-networking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Services and Networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-and-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling and Availability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Translation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#importing-datasources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Importing Datasources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#websocket-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Websocket Routing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/downloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Downloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contributing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/development-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/development-guidelines/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guidelines
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#migration-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#value-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Value Mapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Value Mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-env-vars-and-config-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets, Env Vars, and Config Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-and-valkeyredis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database and Valkey/Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pod-and-deployment-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pod and Deployment Customization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#services-and-networking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Services and Networking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-and-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling and Availability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Translation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#importing-datasources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Importing Datasources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#websocket-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Websocket Routing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+<h1 id="migration-from-helm-chart">Migration from Helm Chart<a class="headerlink" href="#migration-from-helm-chart" title="Permanent link">&para;</a></h1>
+<p>This guide helps translate a deployment from the official Apache Superset Helm
+chart to a <code>Superset</code> custom resource. It focuses on feature parity and on the
+places where the operator intentionally uses a different model.</p>
+<p>The operator covers the chart's core application features: web server, Celery
+workers, Celery Beat, Celery Flower, websocket server, database migration,
+application initialization, Python configuration, env vars, services, ingress,
+autoscaling, disruption budgets, probes, security contexts, scheduling
+constraints, sidecars, init containers, and custom volumes.</p>
+<p>The main differences are deliberate:</p>
+<ul>
+<li>The operator does not install PostgreSQL or Redis/Valkey. Bring your own
+  database and cache, then reference them from the <code>Superset</code> CR.</li>
+<li>Production mode rejects inline operator-managed secrets. Use Kubernetes
+  Secrets through <code>secretKeyFrom</code>, <code>metastore.uriFrom</code>,
+  <code>metastore.passwordFrom</code>, and <code>valkey.passwordFrom</code>.</li>
+<li>Lifecycle work is split into managed <code>migrate</code> and <code>init</code> tasks instead of a
+  Helm hook Job. This gives the operator status, retries, upgrade gating, and
+  maintenance-page support.</li>
+<li>Gateway API is the preferred way to route multiple Superset services. The
+  built-in Ingress reconciler targets the web server service only.</li>
+</ul>
+<h2 id="migration-workflow">Migration Workflow<a class="headerlink" href="#migration-workflow" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Export the Helm values used by the existing release:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>get<span class="w"> </span>values<span class="w"> </span>&lt;release&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span>&gt;<span class="w"> </span>superset-values.yaml
+</code></pre></div>
+<ol>
+<li>
+<p>Identify external dependencies. If the Helm release currently installed
+   Bitnami PostgreSQL or Redis, provision replacement services before removing
+   the chart. Do not delete the Helm release until database persistence and
+   backups are understood.</p>
+</li>
+<li>
+<p>Create Kubernetes Secrets for the Superset <code>SECRET_KEY</code>, database
+   connection string or password, and Valkey/Redis password. Prefer a full
+   SQLAlchemy URI in <code>metastore.uriFrom</code> when migrating from Helm because it
+   preserves the exact connection string.</p>
+</li>
+<li>
+<p>Translate application configuration from <code>configOverrides</code> into
+   <code>spec.config</code>. Move sensitive values out of Python source and into Secret
+   backed env vars.</p>
+</li>
+<li>
+<p>Translate enabled chart components into operator components. In the
+   operator, presence means enabled:</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">webServer</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">celeryWorker</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">celeryBeat</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">celeryFlower</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">websocketServer</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+</code></pre></div>
+<ol>
+<li>Decide how the first operator reconciliation should handle lifecycle tasks.
+   If the existing Helm deployment already migrated and initialized the
+   database, either allow the operator to run its idempotent <code>migrate</code> and
+   <code>init</code> tasks during a planned window, or disable lifecycle initially:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">lifecycle</span><span class="p">:</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">disabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>Re-enable lifecycle after the first cutover if you want the operator to
+   manage future upgrades.</p>
+<ol>
+<li>
+<p>Create the <code>Superset</code> CR with a name that will not collide with existing
+   Helm resources, wait for it to become ready, then move traffic to the
+   operator-managed Service, Ingress, or HTTPRoute.</p>
+</li>
+<li>
+<p>Remove the old Helm release only after the operator-managed deployment is
+   serving traffic and background workers are healthy.</p>
+</li>
+</ol>
+<h2 id="value-mapping">Value Mapping<a class="headerlink" href="#value-mapping" title="Permanent link">&para;</a></h2>
+<h3 id="global-settings">Global Settings<a class="headerlink" href="#global-settings" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Helm chart value</th>
+<th>Operator equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nameOverride</code>, <code>fullnameOverride</code></td>
+<td><code>metadata.name</code></td>
+<td>The operator derives workload names from the CR name. Generated names are not independently overridden.</td>
+</tr>
+<tr>
+<td><code>extraLabels</code></td>
+<td>Resource-specific labels</td>
+<td>Use <code>podTemplate.labels</code>, component <code>service.labels</code>, <code>networking.ingress.labels</code>, or <code>networking.gateway.labels</code>. There is no single global label field for every generated object.</td>
+</tr>
+<tr>
+<td><code>image.repository</code>, <code>image.tag</code>, <code>image.pullPolicy</code></td>
+<td><code>spec.image.repository</code>, <code>spec.image.tag</code>, <code>spec.image.pullPolicy</code></td>
+<td>Per-component image overrides are available under each component's <code>image</code> field.</td>
+</tr>
+<tr>
+<td><code>imagePullSecrets</code></td>
+<td><code>spec.image.pullSecrets</code></td>
+<td>Applied to all component pods.</td>
+</tr>
+<tr>
+<td><code>runAsUser</code></td>
+<td><code>spec.podTemplate.podSecurityContext.runAsUser</code></td>
+<td>Prefer a full pod or container security context for production hardening.</td>
+</tr>
+<tr>
+<td><code>serviceAccountName</code>, <code>serviceAccount.create</code>, <code>serviceAccount.annotations</code></td>
+<td><code>spec.serviceAccount.name</code>, <code>spec.serviceAccount.create</code>, <code>spec.serviceAccount.annotations</code></td>
+<td>The operator can create or reference a ServiceAccount.</td>
+</tr>
+<tr>
+<td><code>bootstrapScript</code></td>
+<td>Custom image, init container, or command override</td>
+<td>The operator does not generate a bootstrap script. Build dependencies into the image when possible.</td>
+</tr>
+<tr>
+<td><code>forceReload</code> on chart components</td>
+<td><code>spec.forceReload</code></td>
+<td>Operator <code>forceReload</code> is global. For component-only restarts, change a component pod annotation.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="secrets-env-vars-and-config-files">Secrets, Env Vars, and Config Files<a class="headerlink" href="#secrets-env-vars-and-config-files" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Helm chart value</th>
+<th>Operator equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>secretEnv.create</code></td>
+<td>External Kubernetes Secret</td>
+<td>The operator does not create a general-purpose env Secret from CR fields.</td>
+</tr>
+<tr>
+<td><code>envFromSecret</code>, <code>envFromSecrets</code></td>
+<td><code>spec.podTemplate.container.envFrom</code></td>
+<td>Can also be set per component.</td>
+</tr>
+<tr>
+<td><code>extraEnv</code>, <code>extraEnvRaw</code></td>
+<td><code>spec.podTemplate.container.env</code></td>
+<td><code>env</code> entries merge by name between top-level and per-component templates.</td>
+</tr>
+<tr>
+<td><code>extraSecretEnv</code></td>
+<td>Kubernetes Secret plus <code>envFrom</code> or <code>env.valueFrom.secretKeyRef</code></td>
+<td>For operator-owned secrets, use first-class fields such as <code>secretKeyFrom</code>, <code>metastore.uriFrom</code>, and <code>valkey.passwordFrom</code>.</td>
+</tr>
+<tr>
+<td><code>configOverrides</code>, <code>configOverridesFiles</code></td>
+<td><code>spec.config</code> or per-component <code>config</code></td>
+<td>The operator appends this Python after generated <code>SECRET_KEY</code>, metastore, Valkey, Celery, and SQLAlchemy config.</td>
+</tr>
+<tr>
+<td><code>configFromSecret</code></td>
+<td><code>spec.config</code> plus Secret-backed env vars</td>
+<td>The operator renders <code>superset_config.py</code> into ConfigMaps. Avoid putting secret values directly in Python config.</td>
+</tr>
+<tr>
+<td><code>extraConfigs</code></td>
+<td>External ConfigMap plus <code>podTemplate.volumes</code> and <code>volumeMounts</code></td>
+<td>If you used <code>import_datasources.yaml</code>, add a custom lifecycle init command to import it.</td>
+</tr>
+<tr>
+<td><code>extraSecrets</code></td>
+<td>External Secret plus <code>podTemplate.volumes</code> and <code>volumeMounts</code></td>
+<td>Mount additional files explicitly where your config expects them.</td>
+</tr>
+<tr>
+<td><code>extraVolumes</code>, <code>extraVolumeMounts</code></td>
+<td><code>spec.podTemplate.volumes</code>, <code>spec.podTemplate.container.volumeMounts</code></td>
+<td>Can be shared top-level or overridden per component.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="database-and-valkeyredis">Database and Valkey/Redis<a class="headerlink" href="#database-and-valkeyredis" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Helm chart value</th>
+<th>Operator equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>supersetNode.connections.db_*</code></td>
+<td><code>spec.metastore</code></td>
+<td>Use <code>uriFrom</code> for an exact SQLAlchemy URI, or structured <code>host</code>, <code>database</code>, <code>username</code>, and <code>passwordFrom</code>.</td>
+</tr>
+<tr>
+<td><code>supersetNode.connections.redis_*</code></td>
+<td><code>spec.valkey</code></td>
+<td><code>valkey</code> works with Redis-compatible services and renders cache, Celery broker/backend, and SQL Lab results backend config.</td>
+</tr>
+<tr>
+<td><code>supersetNode.connections.redis_ssl</code></td>
+<td><code>spec.valkey.ssl</code></td>
+<td>Mount client certs or CA bundles with <code>podTemplate.volumes</code> if needed.</td>
+</tr>
+<tr>
+<td><code>postgresql.*</code></td>
+<td>Not managed by this operator</td>
+<td>Use a managed database, CloudNativePG, another PostgreSQL operator, or keep an existing PostgreSQL instance.</td>
+</tr>
+<tr>
+<td><code>redis.*</code></td>
+<td>Not managed by this operator</td>
+<td>Use a managed Redis/Valkey service, Redis/Valkey operator, or separate Helm chart.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="components">Components<a class="headerlink" href="#components" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Helm chart value</th>
+<th>Operator equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>supersetNode.*</code></td>
+<td><code>spec.webServer.*</code></td>
+<td>Web server Deployment, Service, config, probes, resources, HPA, and PDB.</td>
+</tr>
+<tr>
+<td><code>supersetNode.replicas.replicaCount</code></td>
+<td><code>spec.webServer.replicas</code></td>
+<td>If <code>autoscaling</code> is set, the HPA manages replicas.</td>
+</tr>
+<tr>
+<td><code>supersetNode.command</code></td>
+<td><code>spec.webServer.podTemplate.container.command</code></td>
+<td>The operator default is <code>/usr/bin/run-server.sh</code>. Gunicorn settings are structured under <code>webServer.gunicorn</code>.</td>
+</tr>
+<tr>
+<td><code>supersetWorker.*</code></td>
+<td><code>spec.celeryWorker.*</code></td>
+<td>Worker Deployment and config. Celery process settings are structured under <code>celeryWorker.celery</code>.</td>
+</tr>
+<tr>
+<td><code>supersetWorker.replicas.replicaCount</code></td>
+<td><code>spec.celeryWorker.replicas</code></td>
+<td>Top-level <code>spec.replicas</code> can provide a shared default.</td>
+</tr>
+<tr>
+<td><code>supersetCeleryBeat.enabled</code></td>
+<td><code>spec.celeryBeat: {}</code></td>
+<td>Celery Beat is always a singleton.</td>
+</tr>
+<tr>
+<td><code>supersetCeleryFlower.enabled</code></td>
+<td><code>spec.celeryFlower: {}</code></td>
+<td>Flower gets its own Deployment and Service.</td>
+</tr>
+<tr>
+<td><code>supersetCeleryFlower.service.*</code></td>
+<td><code>spec.celeryFlower.service.*</code></td>
+<td>Supports service type, port, nodePort, labels, and annotations.</td>
+</tr>
+<tr>
+<td><code>supersetWebsockets.enabled</code></td>
+<td><code>spec.websocketServer: {}</code></td>
+<td>Use a websocket image such as <code>oneacrefund/superset-websocket</code>, or your own image.</td>
+</tr>
+<tr>
+<td><code>supersetWebsockets.config</code></td>
+<td>Env vars or mounted config file</td>
+<td>The operator does not render websocket <code>config.json</code>. Mount one with <code>podTemplate.volumes</code>, or configure the websocket server through env vars.</td>
+</tr>
+<tr>
+<td><code>init.enabled</code></td>
+<td><code>spec.lifecycle.disabled</code> or task-level <code>disabled</code></td>
+<td>Lifecycle is enabled by default. Set <code>lifecycle.disabled: true</code> to skip all tasks.</td>
+</tr>
+<tr>
+<td><code>init.command</code>, <code>init.initscript</code></td>
+<td><code>spec.lifecycle.migrate.command</code>, <code>spec.lifecycle.init.command</code></td>
+<td>The operator splits database migration and application initialization into separate tasks.</td>
+</tr>
+<tr>
+<td><code>init.createAdmin</code>, <code>init.adminUser</code>, <code>init.loadExamples</code></td>
+<td><code>spec.lifecycle.init.adminUser</code>, <code>spec.lifecycle.init.loadExamples</code></td>
+<td>These are allowed only in <code>environment: Development</code>. In production, create users through your normal identity and admin process or a custom task command using Secret-backed env vars.</td>
+</tr>
+<tr>
+<td><code>init.jobAnnotations</code></td>
+<td>Not applicable</td>
+<td>Lifecycle tasks are CRD-managed pods, not Helm hook Jobs.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="pod-and-deployment-customization">Pod and Deployment Customization<a class="headerlink" href="#pod-and-deployment-customization" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Helm chart value</th>
+<th>Operator equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resources</code></td>
+<td><code>spec.podTemplate.container.resources</code></td>
+<td>Top-level resources apply to all components unless overridden.</td>
+</tr>
+<tr>
+<td>Component <code>resources</code></td>
+<td>Component <code>podTemplate.container.resources</code></td>
+<td>For example, <code>spec.celeryWorker.podTemplate.container.resources</code>.</td>
+</tr>
+<tr>
+<td><code>nodeSelector</code>, <code>tolerations</code>, <code>affinity</code>, <code>hostAliases</code>, <code>topologySpreadConstraints</code>, <code>priorityClassName</code></td>
+<td><code>spec.podTemplate.*</code></td>
+<td>Top-level values merge with per-component values according to the configuration guide.</td>
+</tr>
+<tr>
+<td>Component <code>podAnnotations</code>, <code>podLabels</code></td>
+<td>Component <code>podTemplate.annotations</code>, <code>podTemplate.labels</code></td>
+<td>Operator-managed labels are protected and cannot be overridden.</td>
+</tr>
+<tr>
+<td>Component <code>deploymentAnnotations</code>, <code>deploymentLabels</code></td>
+<td>No direct equivalent</td>
+<td>Prefer pod labels/annotations, service labels/annotations, or a cluster policy that mutates Deployments if you need Deployment metadata.</td>
+</tr>
+<tr>
+<td>Component <code>strategy</code></td>
+<td>Component <code>deploymentTemplate.strategy</code></td>
+<td>Also supports <code>revisionHistoryLimit</code>, <code>minReadySeconds</code>, and <code>progressDeadlineSeconds</code>.</td>
+</tr>
+<tr>
+<td>Component <code>startupProbe</code>, <code>livenessProbe</code>, <code>readinessProbe</code></td>
+<td>Component <code>podTemplate.container.startupProbe</code>, <code>livenessProbe</code>, <code>readinessProbe</code></td>
+<td>The operator provides defaults for served components.</td>
+</tr>
+<tr>
+<td>Component <code>podSecurityContext</code>, <code>containerSecurityContext</code></td>
+<td>Component <code>podTemplate.podSecurityContext</code>, <code>podTemplate.container.securityContext</code></td>
+<td>Can also be set top-level.</td>
+</tr>
+<tr>
+<td>Component <code>extraContainers</code></td>
+<td>Component <code>podTemplate.sidecars</code></td>
+<td>Sidecars merge by container name.</td>
+</tr>
+<tr>
+<td>Component <code>initContainers</code></td>
+<td>Component <code>podTemplate.initContainers</code></td>
+<td>Init containers merge by container name.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="services-and-networking">Services and Networking<a class="headerlink" href="#services-and-networking" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Helm chart value</th>
+<th>Operator equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>service.type</code>, <code>service.port</code>, <code>service.nodePort.http</code>, <code>service.annotations</code></td>
+<td><code>spec.webServer.service.type</code>, <code>port</code>, <code>nodePort</code>, <code>annotations</code></td>
+<td><code>loadBalancerIP</code> is not currently modeled; use provider annotations where possible.</td>
+</tr>
+<tr>
+<td><code>ingress.enabled</code>, <code>ingress.ingressClassName</code>, <code>ingress.annotations</code>, <code>ingress.hosts</code>, <code>ingress.tls</code>, <code>ingress.path</code>, <code>ingress.pathType</code></td>
+<td><code>spec.networking.ingress</code></td>
+<td>Operator-managed Ingress targets the web server.</td>
+</tr>
+<tr>
+<td><code>ingress.extraHostsRaw</code></td>
+<td><code>spec.networking.ingress.hosts</code> for normal web routes, or a custom Ingress</td>
+<td>Use a separate Ingress for non-web backends or unusual raw rules.</td>
+</tr>
+<tr>
+<td><code>supersetWebsockets.ingress.*</code></td>
+<td><code>spec.networking.gateway</code> or a custom Ingress</td>
+<td>The operator's Gateway API integration routes <code>/ws</code> to the websocket service. Built-in Ingress does not route websocket paths.</td>
+</tr>
+<tr>
+<td>Flower or MCP external paths</td>
+<td><code>spec.networking.gateway</code></td>
+<td>Gateway API can route <code>/flower</code> and <code>/mcp</code> to their services.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scaling-and-availability">Scaling and Availability<a class="headerlink" href="#scaling-and-availability" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Helm chart value</th>
+<th>Operator equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>supersetNode.autoscaling.*</code></td>
+<td><code>spec.webServer.autoscaling</code></td>
+<td>Uses Kubernetes <code>autoscaling/v2</code> metrics, so CPU, memory, custom, and external metrics are supported.</td>
+</tr>
+<tr>
+<td><code>supersetWorker.autoscaling.*</code></td>
+<td><code>spec.celeryWorker.autoscaling</code></td>
+<td>Same HPA model as web server.</td>
+</tr>
+<tr>
+<td>Component <code>podDisruptionBudget.*</code></td>
+<td>Component <code>podDisruptionBudget</code></td>
+<td>Supported for web server, Celery worker, Flower, websocket server, and MCP server.</td>
+</tr>
+<tr>
+<td><code>supersetCeleryBeat.podDisruptionBudget.*</code></td>
+<td>No direct equivalent</td>
+<td>Celery Beat is a singleton in the operator and currently has no PDB field.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="example-translation">Example Translation<a class="headerlink" href="#example-translation" title="Permanent link">&para;</a></h2>
+<p>Helm values:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">image</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0.0</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nt">supersetNode</span><span class="p">:</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">replicas</span><span class="p">:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">replicaCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">connections</span><span class="p">:</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nt">db_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset-db</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="nt">db_port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;5432&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="nt">db_user</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">db_pass</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">db_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="nt">redis_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="nt">redis_port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;6379&quot;</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="nt">supersetWorker</span><span class="p">:</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">  </span><span class="nt">replicas</span><span class="p">:</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">    </span><span class="nt">replicaCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="nt">supersetCeleryBeat</span><span class="p">:</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="nt">configOverrides</span><span class="p">:</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">  </span><span class="nt">feature_flags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">    </span><span class="no">FEATURE_FLAGS = {&quot;ALERT_REPORTS&quot;: True}</span>
+</code></pre></div>
+<p>Operator CR:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset.apache.org/v1alpha1</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Superset</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;5.0.0&quot;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nt">secretKeyFrom</span><span class="p">:</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset-secrets</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">secret-key</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="nt">metastore</span><span class="p">:</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PostgreSQL</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset-db</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5432</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="nt">database</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="nt">passwordFrom</span><span class="p">:</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset-db</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">password</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">  </span><span class="nt">valkey</span><span class="p">:</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">    </span><span class="no">FEATURE_FLAGS = {&quot;ALERT_REPORTS&quot;: True}</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">  </span><span class="nt">webServer</span><span class="p">:</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">    </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">  </span><span class="nt">celeryWorker</span><span class="p">:</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">    </span><span class="nt">replicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">  </span><span class="nt">celeryBeat</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">  </span><span class="nt">lifecycle</span><span class="p">:</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">    </span><span class="nt">migrate</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">    </span><span class="nt">init</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+</code></pre></div>
+<h2 id="importing-datasources">Importing Datasources<a class="headerlink" href="#importing-datasources" title="Permanent link">&para;</a></h2>
+<p>The Helm chart's default init script imports
+<code>/app/configs/import_datasources.yaml</code> when that file exists. The operator does
+not run this import automatically. To keep the behavior, mount the file and add
+the import to the init command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">lifecycle</span><span class="p">:</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">podTemplate</span><span class="p">:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datasource-import</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">          </span><span class="nt">configMap</span><span class="p">:</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset-datasources</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">      </span><span class="nt">container</span><span class="p">:</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">datasource-import</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/app/configs</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="nt">migrate</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">    </span><span class="nt">init</span><span class="p">:</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">      </span><span class="nt">command</span><span class="p">:</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/bin/sh</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-c</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">          </span><span class="no">superset init</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">          </span><span class="no">if [ -f /app/configs/import_datasources.yaml ]; then</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">            </span><span class="no">superset import_datasources -p /app/configs/import_datasources.yaml</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">          </span><span class="no">fi</span>
+</code></pre></div>
+<h2 id="websocket-routing">Websocket Routing<a class="headerlink" href="#websocket-routing" title="Permanent link">&para;</a></h2>
+<p>If you used the Helm chart's <code>supersetWebsockets.ingress</code> path, prefer Gateway
+API with the operator:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">websocketServer</span><span class="p">:</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oneacrefund/superset-websocket</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">latest</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="nt">service</span><span class="p">:</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">      </span><span class="nt">gatewayPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/ws</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">networking</span><span class="p">:</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="nt">gateway</span><span class="p">:</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span><span class="nt">gatewayRef</span><span class="p">:</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">shared-gateway</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gateway-system</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">      </span><span class="nt">hostnames</span><span class="p">:</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">superset.example.com</span>
+</code></pre></div>
+<p>If your cluster only supports Ingress, create a separate Ingress for the
+websocket service (<code>&lt;superset-name&gt;-websocket-server</code>) or route websocket
+traffic outside the operator-managed Ingress.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy", "navigation.sections", "navigation.expand", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
