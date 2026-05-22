@@ -750,7 +750,12 @@ func TestPipelineChain_UpstreamChangeInvalidatesDownstream(t *testing.T) {
 	}
 }
 
-func TestPipelineChain_ImageChangeOnlyAffectsMigrate(t *testing.T) {
+// TestPipelineChain_DownstreamInputChangesDoNotRippleUpstream verifies that
+// the cascade only flows in the pipeline direction: changing a migrate-only
+// hashed input does not affect clone's checksum. Production clone inputs
+// include the target Superset image (see cloneInputs); this test exercises
+// the cascade math with synthetic inputs that intentionally omit it.
+func TestPipelineChain_DownstreamInputChangesDoNotRippleUpstream(t *testing.T) {
 	r := &SupersetReconciler{}
 
 	cloneCmd := []string{"/bin/sh", "-c", "pg_dump | psql"}
@@ -758,7 +763,8 @@ func TestPipelineChain_ImageChangeOnlyAffectsMigrate(t *testing.T) {
 
 	parentUID := "test-uid"
 
-	// Clone with same trigger.
+	// Synthetic clone inputs (Trigger only) — in production cloneInputs also
+	// includes target image, but here we want to isolate cascade direction.
 	cloneChecksum := r.computeStepChecksum(parentUID, taskTypeClone, cloneCmd, struct{ Trigger string }{"v1"})
 
 	// Migrate with different image versions.
@@ -766,13 +772,14 @@ func TestPipelineChain_ImageChangeOnlyAffectsMigrate(t *testing.T) {
 	migrate2 := r.computeStepChecksum(cloneChecksum, taskTypeMigrate, migrateCmd, struct{ Image string }{"img:5.0"})
 
 	if migrate1 == migrate2 {
-		t.Error("migrate checksum should change when image changes")
+		t.Error("migrate checksum should change when its hashed Image input changes")
 	}
 
-	// Clone checksum should NOT change due to image change.
+	// Re-computing clone with identical synthetic inputs yields the same
+	// checksum: cascade does not ripple upstream from migrate.
 	clone2 := r.computeStepChecksum(parentUID, taskTypeClone, cloneCmd, struct{ Trigger string }{"v1"})
 	if cloneChecksum != clone2 {
-		t.Error("clone checksum should NOT change when image changes (clone doesn't watch image)")
+		t.Error("clone checksum should not change when only migrate's hashed input changed (cascade is downstream-only)")
 	}
 }
 
@@ -1166,13 +1173,13 @@ func TestAllTasksStillComplete_SkipsDrainWhenNothingChanged(t *testing.T) {
 	}
 
 	t.Run("returns true when nothing changed", func(t *testing.T) {
-		if !r.allTasksStillComplete(superset, false, true, false, true, configChecksum) {
+		if !r.allTasksStillComplete(superset, configChecksum) {
 			t.Error("expected allTasksStillComplete=true when checksums match")
 		}
 	})
 
 	t.Run("returns false when config changes", func(t *testing.T) {
-		if r.allTasksStillComplete(superset, false, true, false, true, "config-changed") {
+		if r.allTasksStillComplete(superset, "config-changed") {
 			t.Error("expected allTasksStillComplete=false when config checksum changed")
 		}
 	})
@@ -1180,7 +1187,7 @@ func TestAllTasksStillComplete_SkipsDrainWhenNothingChanged(t *testing.T) {
 	t.Run("returns false when image changes", func(t *testing.T) {
 		modified := superset.DeepCopy()
 		modified.Spec.Image.Tag = "5.0.0"
-		if r.allTasksStillComplete(modified, false, true, false, true, configChecksum) {
+		if r.allTasksStillComplete(modified, configChecksum) {
 			t.Error("expected allTasksStillComplete=false when image changed")
 		}
 	})
@@ -1188,7 +1195,7 @@ func TestAllTasksStillComplete_SkipsDrainWhenNothingChanged(t *testing.T) {
 	t.Run("returns false with no stored checksums", func(t *testing.T) {
 		modified := superset.DeepCopy()
 		modified.Status.Lifecycle.LastCompletedChecksums = nil
-		if r.allTasksStillComplete(modified, false, true, false, true, configChecksum) {
+		if r.allTasksStillComplete(modified, configChecksum) {
 			t.Error("expected allTasksStillComplete=false with nil checksums")
 		}
 	})
@@ -1198,7 +1205,7 @@ func TestAllTasksStillComplete_SkipsDrainWhenNothingChanged(t *testing.T) {
 		modified.Spec.Lifecycle.Migrate = &supersetv1alpha1.MigrateTaskSpec{
 			BaseTaskSpec: supersetv1alpha1.BaseTaskSpec{Trigger: common.Ptr("force-v1")},
 		}
-		if r.allTasksStillComplete(modified, false, true, false, true, configChecksum) {
+		if r.allTasksStillComplete(modified, configChecksum) {
 			t.Error("expected allTasksStillComplete=false when trigger changed")
 		}
 	})
@@ -1243,7 +1250,7 @@ func TestAllTasksStillComplete_WithCloneSchedule(t *testing.T) {
 	}
 
 	t.Run("stable within cron window", func(t *testing.T) {
-		if !r.allTasksStillComplete(superset, true, true, false, true, configChecksum) {
+		if !r.allTasksStillComplete(superset, configChecksum) {
 			t.Error("expected allTasksStillComplete=true within same cron window")
 		}
 	})
@@ -1251,7 +1258,7 @@ func TestAllTasksStillComplete_WithCloneSchedule(t *testing.T) {
 	t.Run("returns false when cron tick crosses boundary", func(t *testing.T) {
 		nextHour := time.Date(2026, 5, 11, 15, 1, 0, 0, time.UTC)
 		r2 := &SupersetReconciler{Now: func() time.Time { return nextHour }}
-		if r2.allTasksStillComplete(superset, true, true, false, true, configChecksum) {
+		if r2.allTasksStillComplete(superset, configChecksum) {
 			t.Error("expected allTasksStillComplete=false after cron boundary crossing")
 		}
 	})
@@ -1447,7 +1454,7 @@ func TestAllTasksStillComplete_WithRotate(t *testing.T) {
 	}
 
 	t.Run("returns true when nothing changed", func(t *testing.T) {
-		if !r.allTasksStillComplete(superset, false, true, true, true, configChecksum) {
+		if !r.allTasksStillComplete(superset, configChecksum) {
 			t.Error("expected allTasksStillComplete=true when checksums match")
 		}
 	})
@@ -1458,7 +1465,7 @@ func TestAllTasksStillComplete_WithRotate(t *testing.T) {
 			LocalObjectReference: corev1.LocalObjectReference{Name: "rotated"},
 			Key:                  "key",
 		}
-		if r.allTasksStillComplete(modified, false, true, true, true, configChecksum) {
+		if r.allTasksStillComplete(modified, configChecksum) {
 			t.Error("expected allTasksStillComplete=false when previousSecretKeyFrom changes")
 		}
 	})
@@ -1466,7 +1473,7 @@ func TestAllTasksStillComplete_WithRotate(t *testing.T) {
 	t.Run("rotate cascades to init", func(t *testing.T) {
 		modified := superset.DeepCopy()
 		modified.Spec.Lifecycle.Rotate.Trigger = common.Ptr("force")
-		if r.allTasksStillComplete(modified, false, true, true, true, configChecksum) {
+		if r.allTasksStillComplete(modified, configChecksum) {
 			t.Error("expected allTasksStillComplete=false when rotate trigger changes (cascades to init)")
 		}
 	})
