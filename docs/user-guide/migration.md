@@ -44,10 +44,11 @@ The main differences are deliberate:
 - Lifecycle work is split into managed `migrate` and `init` tasks instead of a
   Helm hook Job. This gives the operator status, retries, upgrade gating, and
   maintenance-page support.
-- Gateway API is the preferred way to route multiple Superset services. The
-  built-in Ingress reconciler targets the web server service only — see
-  [Known Parity Gaps](#known-parity-gaps) for the implications when the
-  Helm chart's websocket Ingress path was in use.
+- Gateway API and Ingress are both first-class. Either one routes the web
+  server plus the websocket, Flower, and MCP services from a single object —
+  the operator expands a bare host into one rule per present component. Gateway
+  API is preferred only when you need multi-gateway topologies or richer
+  routing than Ingress can express.
 
 ## Migration Workflow
 
@@ -184,7 +185,7 @@ Superset version you deploy.
 | Component `resources` | Component `podTemplate.container.resources` | For example, `spec.celeryWorker.podTemplate.container.resources`. |
 | `nodeSelector`, `tolerations`, `affinity`, `hostAliases`, `topologySpreadConstraints`, `priorityClassName` | `spec.podTemplate.*` | Top-level values merge with per-component values according to the configuration guide. |
 | Component `podAnnotations`, `podLabels` | Component `podTemplate.annotations`, `podTemplate.labels` | Operator-managed labels are protected and cannot be overridden. |
-| Component `deploymentAnnotations`, `deploymentLabels` | No direct equivalent | Prefer pod labels/annotations, service labels/annotations, or a cluster policy that mutates Deployments if you need Deployment metadata. |
+| Component `deploymentAnnotations`, `deploymentLabels` | Component `deploymentTemplate.annotations`, `deploymentTemplate.labels` | Set top-level or per component; field-level merged (component wins on key conflict). Operator-managed labels are applied last and cannot be overridden. |
 | Component `strategy` | Component `deploymentTemplate.strategy` | Also supports `revisionHistoryLimit`, `minReadySeconds`, and `progressDeadlineSeconds`. |
 | Component `startupProbe`, `livenessProbe`, `readinessProbe` | Component `podTemplate.container.startupProbe`, `livenessProbe`, `readinessProbe` | The operator provides defaults for served components. |
 | Component `podSecurityContext`, `containerSecurityContext` | Component `podTemplate.podSecurityContext`, `podTemplate.container.securityContext` | Can also be set top-level. |
@@ -197,10 +198,22 @@ Superset version you deploy.
 | Helm chart value | Operator equivalent | Notes |
 |---|---|---|
 | `service.type`, `service.port`, `service.nodePort.http`, `service.annotations` | `spec.webServer.service.type`, `port`, `nodePort`, `annotations` | `loadBalancerIP` is not modeled because the Kubernetes field is deprecated; use provider annotations where possible. |
-| `ingress.enabled`, `ingress.ingressClassName`, `ingress.annotations`, `ingress.hosts`, `ingress.tls`, `ingress.path`, `ingress.pathType` | `spec.networking.ingress` | Operator-managed Ingress targets the web server. Use `className` for `ingressClassName`, or keep legacy `kubernetes.io/ingress.class` under `annotations`. Helm's top-level `path` and `pathType` move to `hosts[].paths[]`. |
+| `ingress.enabled`, `ingress.ingressClassName`, `ingress.annotations`, `ingress.hosts`, `ingress.tls`, `ingress.path`, `ingress.pathType` | `spec.networking.ingress` | A host with no explicit `paths` fans out into one rule per present component, mirroring Gateway API (see [Networking & Monitoring](networking-and-monitoring.md#gateway-api-recommended) for the routing table). Use `className` for `ingressClassName`, or keep legacy `kubernetes.io/ingress.class` under `annotations`. Helm's top-level `path`/`pathType` move to `hosts[].paths[]`; setting explicit paths routes them to the web server only. |
 | `ingress.extraHostsRaw` | `spec.networking.ingress.hosts` for normal web routes, or a custom Ingress | Use a separate Ingress for non-web backends or unusual raw rules. |
-| `supersetWebsockets.ingress.*` | `spec.networking.gateway` or a custom Ingress | The operator's Gateway API integration routes `/ws` to the websocket service. Built-in Ingress does not route websocket paths. |
-| Flower or MCP external paths | `spec.networking.gateway` | Gateway API can route `/flower` and `/mcp` to their services. |
+| `supersetWebsockets.ingress.*` | `spec.networking.ingress` or `spec.networking.gateway` | Both reconcilers expose the websocket service automatically when `websocketServer` is present; set its path with `websocketServer.service.gatewayPath`. |
+| Flower or MCP external paths | `spec.networking.ingress` or `spec.networking.gateway` | Both reconcilers expose every present component on its own subpath; see the routing table in [Networking & Monitoring](networking-and-monitoring.md#gateway-api-recommended). |
+
+Both reconcilers expand a host with no explicit `paths` into one rule per
+present component, each served under its own subpath (overridable via
+`service.gatewayPath`). Requests are forwarded as-is, with no path rewriting, so
+each component owns its subpath: the operator configures Flower for this
+automatically (its `--url_prefix`), and the web server serves at the root. This
+differs from the Helm chart, where the web server sat at `/` and the websocket
+was a separate `/ws` Ingress rule. If a component must be reached at the root
+instead of a subpath, give it its own host or a prefix-stripping rewrite on your
+controller. See
+[Networking & Monitoring](networking-and-monitoring.md#gateway-api-recommended)
+for the routing table.
 
 Helm's web Ingress shape:
 
@@ -254,27 +267,11 @@ spec:
 The operator covers the chart's commonly used features. The items below have
 no direct equivalent today; each lists the recommended workaround:
 
-- **Built-in Ingress for the websocket service.** The Helm chart's
-  `supersetWebsockets.ingress` injects a `/ws` rule into the same Ingress as
-  the web server. The operator's `spec.networking.ingress` reconciler targets
-  the web server service only. On clusters with Gateway API, use
-  `spec.networking.gateway` — the operator routes web, websocket, Flower, and
-  MCP backends from a single `HTTPRoute`. On clusters without Gateway API,
-  create a separate Ingress that points at the
-  `<supersetName>-websocket-server` Service. See
-  [Websocket Routing](#websocket-routing) for an example.
 - **Celery Beat PDB.** The chart exposes `supersetCeleryBeat.podDisruptionBudget`.
   The operator pins Beat to a single replica and does not surface a PDB field;
   a PDB on a 1-replica workload is advisory only. If Beat downtime during
   voluntary disruptions is unacceptable, use `priorityClassName` and node
   affinity to influence scheduling instead.
-- **Deployment-level `labels` and `annotations`.** The chart exposes
-  `deploymentLabels` and `deploymentAnnotations` per component. The operator
-  surfaces pod, service, and route metadata, but not Deployment-object
-  metadata. If you need Deployment annotations (for example, to drive a
-  third-party controller), apply them with a cluster policy mutator
-  (Kyverno/OPA) or `kubectl annotate` until the operator grows a
-  `deploymentTemplate.labels`/`annotations` field.
 - **Bundled PostgreSQL and Redis subcharts.** Intentional — the operator does
   not provision external dependencies. Use a managed database service,
   CloudNativePG, or a Redis/Valkey operator.
@@ -434,8 +431,26 @@ websocket Deployment.
 
 ## Websocket Routing
 
-If you used the Helm chart's `supersetWebsockets.ingress` path, prefer Gateway
-API with the operator:
+The Helm chart's `supersetWebsockets.ingress` injects a websocket rule alongside
+the web server. The operator does the same automatically: whenever
+`websocketServer` is present, both the Ingress and Gateway API reconcilers add a
+rule pointing at the `<superset-name>-websocket-server` Service. A bare Ingress
+host is enough:
+
+```yaml
+spec:
+  websocketServer:
+    image:
+      repository: oneacrefund/superset-websocket
+      tag: latest
+  networking:
+    ingress:
+      hosts:
+        - host: superset.example.com   # fans out to every present component on its subpath
+```
+
+The equivalent with Gateway API, plus a customized websocket path via
+`service.gatewayPath`:
 
 ```yaml
 spec:
@@ -454,6 +469,5 @@ spec:
         - superset.example.com
 ```
 
-If your cluster only supports Ingress, create a separate Ingress for the
-websocket service (`<superset-name>-websocket-server`) or route websocket
-traffic outside the operator-managed Ingress.
+Adding explicit `hosts[].paths[]` to the Ingress turns off the per-component
+fan-out for that host and routes the listed paths to the web server only.
