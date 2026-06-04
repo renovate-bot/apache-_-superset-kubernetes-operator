@@ -31,6 +31,15 @@
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "kubernetes-sigs/kind"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the e2e curl helper image",
+      "managerFilePatterns": ["/^test\\/e2e\\/e2e_suite_test\\.go$/"],
+      "matchStrings": [
+        "// renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+curlImage = getEnvOrDefault\\(\\s+\"E2E_CURL_IMAGE\",\\s+\"\\S+:(?<currentValue>[^@\\\"]+)@(?<currentDigest>sha256:[a-f0-9]+)\""
+      ],
+      "versioningTemplate": "docker"
     }
   ]
 }

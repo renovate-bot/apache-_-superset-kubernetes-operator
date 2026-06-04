@@ -39,7 +39,7 @@ metadata:
   namespace: %s
 spec:
   image:
-    tag: "latest"
+    tag: "6.1.0"
   environment: Production
   secretKey: plain-text-key
   metastore:
@@ -63,7 +63,7 @@ metadata:
   namespace: %s
 spec:
   image:
-    tag: "latest"
+    tag: "6.1.0"
   environment: Production
   secretKeyFrom:
     name: app-secret

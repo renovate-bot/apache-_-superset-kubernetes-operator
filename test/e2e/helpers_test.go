@@ -37,6 +37,11 @@ var (
 	optionalCRDPaths  []string
 )
 
+const podContainerStatusJSONPath = "{range .status.containerStatuses[*]}" +
+	"{.name}:{.state.waiting.reason}:{.state.waiting.message}" +
+	"{.state.terminated.reason}:{.state.terminated.exitCode}:{.state.terminated.message}" +
+	"{end}"
+
 func setupManager() {
 	By("creating manager namespace")
 	if _, err := utils.Run(exec.Command("kubectl", "get", "ns", namespace)); err != nil {
@@ -151,6 +156,15 @@ func collectDiagnostics() {
 	} else {
 		_, _ = fmt.Fprintf(GinkgoWriter, "Failed to get curl-metrics logs: %s\n", err)
 	}
+
+	By("describing the curl-metrics pod")
+	cmd = exec.Command("kubectl", "describe", "pod", "curl-metrics", "-n", namespace)
+	metricsPodDescription, err := utils.Run(cmd)
+	if err == nil {
+		_, _ = fmt.Fprintf(GinkgoWriter, "curl-metrics pod description:\n%s", metricsPodDescription)
+	} else {
+		_, _ = fmt.Fprintf(GinkgoWriter, "Failed to describe curl-metrics pod: %s\n", err)
+	}
 }
 
 func lookupControllerPodName() string {
@@ -249,16 +263,36 @@ func deleteSecret(name string) {
 
 func lifecycleImageYAML(indent string) string {
 	repo, tag := splitImageRef(curlImage)
-	return fmt.Sprintf("%simage:\n%s  repository: %s\n%s  tag: %s\n", indent, indent, repo, indent, tag)
+	return fmt.Sprintf("%simage:\n%s  repository: %s\n%s  tag: %s\n%s  pullPolicy: IfNotPresent\n",
+		indent, indent, repo, indent, tag, indent)
+}
+
+func describePodStatus(name string) string {
+	output, err := runKubectl("get", "pod", name, "-n", namespace,
+		"-o", "jsonpath="+podContainerStatusJSONPath)
+	if err != nil {
+		return err.Error()
+	}
+	return strings.TrimSpace(output)
 }
 
 func splitImageRef(image string) (string, string) {
-	lastSlash := strings.LastIndex(image, "/")
-	lastColon := strings.LastIndex(image, ":")
-	if lastColon > lastSlash {
-		return image[:lastColon], image[lastColon+1:]
+	taggedImage := image
+	if before, digest, ok := strings.Cut(image, "@sha256:"); ok {
+		if digest == "" {
+			Fail(fmt.Sprintf("image %q must include a non-empty sha256 digest", image))
+		}
+		taggedImage = before
 	}
-	return image, "latest"
+
+	lastSlash := strings.LastIndex(taggedImage, "/")
+	lastColon := strings.LastIndex(taggedImage, ":")
+	if lastColon > lastSlash {
+		return taggedImage[:lastColon], image[lastColon+1:]
+	}
+
+	Fail(fmt.Sprintf("image %q must include an explicit tag, optionally with a sha256 digest", image))
+	return "", ""
 }
 
 func restrictedLifecyclePodTemplateYAML(indent string) string {

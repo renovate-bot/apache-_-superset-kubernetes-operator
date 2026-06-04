@@ -73,7 +73,7 @@ metadata:
 spec:
   image:
     repository: apache/superset
-    tag: "1.0.0"
+    tag: "6.0.0"
   environment: Development
   secretKeyFrom:
     name: %[2]s
@@ -130,7 +130,7 @@ spec:
 
 		By("waiting for the initial install to settle (supervised, no enabled tasks)")
 		expectJSONPath("superset", crName, "{.status.lifecycle.phase}", "Complete", 2*time.Minute)
-		expectJSONPath("superset", crName, "{.status.lastLifecycleImage}", "apache/superset:1.0.0", time.Minute)
+		expectJSONPath("superset", crName, "{.status.lastLifecycleImage}", "apache/superset:6.0.0", time.Minute)
 	})
 
 	It("reconciles every component into a Deployment", func() {
@@ -264,12 +264,12 @@ spec:
 
 	It("detects an image change and gates the supervised upgrade", func() {
 		By("patching the image tag")
-		patchSuperset(crName, "merge", `{"spec":{"image":{"tag":"1.1.0"}}}`)
+		patchSuperset(crName, "merge", `{"spec":{"image":{"tag":"6.1.0"}}}`)
 
 		By("verifying the upgrade is awaiting approval")
 		expectJSONPath("superset", crName, "{.status.lifecycle.phase}", "AwaitingApproval", time.Minute)
-		expectJSONPath("superset", crName, "{.status.lifecycle.upgrade.fromVersion}", "1.0.0", time.Minute)
-		expectJSONPath("superset", crName, "{.status.lifecycle.upgrade.toVersion}", "1.1.0", time.Minute)
+		expectJSONPath("superset", crName, "{.status.lifecycle.upgrade.fromVersion}", "6.0.0", time.Minute)
+		expectJSONPath("superset", crName, "{.status.lifecycle.upgrade.toVersion}", "6.1.0", time.Minute)
 		expectJSONPath("superset", crName, "{.status.lifecycle.upgrade.direction}", "Upgrade", time.Minute)
 
 		By("approving the supervised upgrade with the recorded token")
@@ -281,7 +281,7 @@ spec:
 		Expect(err).NotTo(HaveOccurred())
 
 		By("verifying the upgrade settles and the consumed annotation is removed")
-		expectJSONPath("superset", crName, "{.status.lastLifecycleImage}", "apache/superset:1.1.0", time.Minute)
+		expectJSONPath("superset", crName, "{.status.lastLifecycleImage}", "apache/superset:6.1.0", time.Minute)
 		expectJSONPath("superset", crName, "{.status.lifecycle.phase}", "Complete", time.Minute)
 		Eventually(func(g Gomega) {
 			output, err := jsonPath("superset", crName, "{.metadata.annotations}")

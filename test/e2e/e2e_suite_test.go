@@ -35,9 +35,15 @@ var (
 	// Override via E2E_PROJECT_IMAGE env var for environments with custom registries.
 	projectImage = getEnvOrDefault("E2E_PROJECT_IMAGE", "example.com/superset-kubernetes-operator:v0.0.1")
 
-	// curlImage is the container image used for metrics curl probes in e2e tests.
-	// Override via E2E_CURL_IMAGE env var (e.g., for environments that require a mirror registry).
-	curlImage = getEnvOrDefault("E2E_CURL_IMAGE", "curlimages/curl:latest")
+	// curlImage is the container image used for metrics and lifecycle helper probes
+	// in e2e tests. Keep the default explicitly tagged and off Docker Hub: the
+	// matrix runs multiple Kind clusters in parallel, and anonymous Docker Hub
+	// limits can make version lanes fail for unrelated helper image pulls.
+	// renovate: datasource=docker depName=quay.io/curl/curl
+	curlImage = getEnvOrDefault(
+		"E2E_CURL_IMAGE",
+		"quay.io/curl/curl:8.20.0@sha256:b3f1fb2a51d923260350d21b8654bbc607164a987e2f7c84a0ac199a67df812a",
+	)
 )
 
 // TestE2E runs the end-to-end (e2e) test suite for the project. These tests execute in an isolated,
