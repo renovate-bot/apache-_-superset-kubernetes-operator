@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -126,12 +127,14 @@ var _ = Describe("Manager", Ordered, func() {
 			cmd = exec.Command("kubectl", "run", "curl-metrics", "--restart=Never",
 				"--namespace", namespace,
 				"--image="+curlImage,
+				"--image-pull-policy=IfNotPresent",
 				"--overrides",
 				fmt.Sprintf(`{
 					"spec": {
 						"containers": [{
 							"name": "curl",
 							"image": "%s",
+							"imagePullPolicy": "IfNotPresent",
 							"command": ["/bin/sh", "-c"],
 							"args": ["curl -v -k -H 'Authorization: Bearer %s' https://%s.%s.svc.cluster.local:8443/metrics"],
 							"securityContext": {
@@ -159,7 +162,8 @@ var _ = Describe("Manager", Ordered, func() {
 					"-n", namespace)
 				output, err := utils.Run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("Succeeded"), "curl pod in wrong status")
+				g.Expect(strings.TrimSpace(output)).To(Equal("Succeeded"),
+					"curl pod in wrong status: %s", describePodStatus("curl-metrics"))
 			}
 			Eventually(verifyCurlUp, 5*time.Minute).Should(Succeed())
 

@@ -38,7 +38,7 @@ metadata:
 spec:
   image:
     repository: apache/superset
-    tag: "5.0.0"
+    tag: "6.1.0"
   environment: Development
   secretKey: test-secret-key-not-for-production
   metastore:
@@ -125,7 +125,7 @@ metadata:
 spec:
   image:
     repository: apache/superset
-    tag: "5.0.0"
+    tag: "6.1.0"
   environment: Production
   secretKeyFrom:
     name: %[1]s-current
