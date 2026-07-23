@@ -14,19 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Installs the mikefarah/yq YAML processor, pinned by version and checksum.
+# The pinned SHA256 is for the default linux_amd64 asset (the CI platform);
+# override YQ_PLATFORM and YQ_SHA256 together to install elsewhere.
+
 set -euo pipefail
 
-# renovate: datasource=github-releases depName=helm/helm
-HELM_VERSION="${HELM_VERSION:-v4.2.3}"
-HELM_PLATFORM="${HELM_PLATFORM:-linux-amd64}"
-HELM_SHA256="${HELM_SHA256:-e9b88b4ee95b18c706839c28d3a0220e5bc470e9cd9262410c90793c45ff8b7c}"
+# renovate: datasource=github-releases depName=mikefarah/yq
+YQ_VERSION="${YQ_VERSION:-v4.53.3}"
+YQ_SHA256="${YQ_SHA256:-fa52a4e758c63d38299163fbdd1edfb4c4963247918bf9c1c5d31d84789eded4}"
+YQ_PLATFORM="${YQ_PLATFORM:-linux_amd64}"
 
-archive="helm-${HELM_VERSION}-${HELM_PLATFORM}.tar.gz"
-url="https://get.helm.sh/${archive}"
+asset="yq_${YQ_PLATFORM}"
+url="https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${asset}"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "${tmpdir}"' EXIT
 
-curl -fsSL "${url}" -o "${tmpdir}/${archive}"
-printf '%s  %s\n' "${HELM_SHA256}" "${tmpdir}/${archive}" | sha256sum -c -
-tar -xzf "${tmpdir}/${archive}" -C "${tmpdir}"
-sudo install -m 0755 "${tmpdir}/${HELM_PLATFORM}/helm" /usr/local/bin/helm
+curl -fsSL "${url}" -o "${tmpdir}/yq"
+printf '%s  %s\n' "${YQ_SHA256}" "${tmpdir}/yq" | sha256sum -c -
+sudo install -m 0755 "${tmpdir}/yq" /usr/local/bin/yq
