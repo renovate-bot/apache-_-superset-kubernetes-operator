@@ -125,7 +125,7 @@ func TestReconcile_MyScenario(t *testing.T) {
     superset := &supersetv1alpha1.Superset{
         ObjectMeta: metav1.ObjectMeta{Name: "test", Namespace: "default"},
         Spec: supersetv1alpha1.SupersetSpec{
-            Image:       supersetv1alpha1.ImageSpec{Repository: "apache/superset", Tag: "latest"},
+            Image:       supersetv1alpha1.ImageSpec{Repository: "apache/superset", Tag: "6.1.0"},
             Environment: strPtr("dev"),
             SecretKey:   strPtr("test-secret-key"),
             Lifecycle: &supersetv1alpha1.LifecycleSpec{
@@ -215,7 +215,7 @@ helm unittest -u charts/superset-operator   # update snapshots after an intended
 make helm-values-covered    # verify every values.yaml knob is exercised
 ```
 
-Two scenarios anchor the suite: `minimal_test.yaml` renders the chart with default `values.yaml`, and `full_options_test.yaml` renders it with every knob set via `tests/values/full-options.yaml`. Both capture a full-render **snapshot** (stored in `tests/__snapshot__/`) plus targeted assertions for invariants that must never silently change (watch-scope RBAC, `WATCH_NAMESPACE`, ServiceAccount create-vs-BYO, metrics wiring). Chart/release identity is pinned in each suite so snapshots are stable across chart version bumps.
+Coverage comes in two complementary forms. Full-render **snapshots** catch drift across the whole rendered output — `minimal_test.yaml` (default `values.yaml`) and `full_options_test.yaml` (every knob set via `tests/values/full-options.yaml`), stored in `tests/__snapshot__/`. Targeted assertions (e.g. `optout_and_helpers_test.yaml`) cover opt-out and template-helper branches a single combined snapshot cannot systematically reach, varying one knob at a time. Chart/release identity is pinned in each suite so snapshots stay stable across chart version bumps.
 
 **Any change to the chart — especially a new values knob or feature — must be exercised in `tests/values/full-options.yaml` and its rendered effect captured in the snapshot (`helm unittest -u`).** This is enforced: `make helm-values-covered` (`scripts/check-chart-values-covered.sh`) fails CI when a `values.yaml` key is not set in the comprehensive values file. It closes the gap a snapshot alone cannot — a knob that defaults to null and renders nothing under defaults would otherwise leave both suites green. The gate keys off `values.yaml`, so a template that reads an *undocumented* `.Values.x` is not caught by it; that already violates the chart's documented-values contract (the README is generated from `values.yaml` via helm-docs) and is expected to be caught in review.
 
